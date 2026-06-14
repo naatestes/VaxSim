@@ -49,8 +49,12 @@ click Run Pipeline").
 
 ## Notes
 
-- The frontend loads React, Babel, Tailwind, and Google Fonts from CDNs (like any
-  no-build React artifact). A network connection is needed on first load; assets then cache.
+- **Offline-capable.** React and Babel are vendored under `vendor/` and served same-origin,
+  and the layout uses hand-written CSS (no Tailwind CDN) — so the app loads with no internet.
+  The only external request is Google Fonts (`@import`); if it's blocked, the app falls back to
+  system serif/mono fonts and still works. Good insurance for flaky conference wifi.
 - No database, no auth, no external **data/API** calls — all data is the pipeline's own output.
+- A failed/partial run is shown as an error (the active stage turns red); only a clean run
+  marks all six stages complete. Closing the tab mid-run terminates the pipeline subprocess.
 - The `STAGE:` print convention emitted by `scripts/run_pipeline.py` is documented at the top
   of that file.

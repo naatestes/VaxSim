@@ -63,6 +63,8 @@ const SCALE_RANGE = SCALE_DEFS.map((s) => {
   const vals = AA.split("").map((a) => s.map[a]);
   return { min: Math.min(...vals), max: Math.max(...vals) };
 });
+// neutral blue-gray ramp for the 5 scale categories (keeps the 4 semantic accents free)
+const SCALE_COLORS = ["#9FB3C0", "#6E8DA1", "#2471A3", "#17527C", "#0E3A57"];
 
 /* JS mirror of features.embed(): 9*5 + 2 global = 47-d */
 function embed(pep) {
@@ -148,7 +150,7 @@ const ICONS = {
 };
 
 /* ============================================================== SIDEBAR */
-function Sidebar({ stageStatus, active, onPick, counts }) {
+function Sidebar({ stageStatus, active, onPick, counts, running }) {
   return (
     <div className="flex flex-col" style={{ width: 280, borderRight: `1px solid ${C.rule}`, minHeight: "100%" }}>
       <div style={{ padding: "26px 24px 18px" }}>
@@ -164,7 +166,7 @@ function Sidebar({ stageStatus, active, onPick, counts }) {
         {STAGES.map((s, i) => {
           const st = stageStatus[s.key] || "idle";
           const isActive = i === active;
-          const reachable = st === "complete";
+          const reachable = !running || st === "complete";  // browse freely when idle
           const dotColor = st === "complete" ? s.accent : st === "running" ? s.accent : st === "error" ? C.red : "#CFCFCF";
           return (
             <div key={s.key}
@@ -266,9 +268,9 @@ function StageMutations({ candidates, running, stageStatus }) {
     candidates.forEach((r) => { const k = r.protein + r.mutation; if (!seen.has(k)) seen.set(k, { protein: r.protein, mutation: r.mutation }); });
     return [...seen.values()].sort((a, b) => a.protein.localeCompare(b.protein));
   }, [candidates]);
-  const reveal = !running || stageStatus.mutations === "complete";
+  const reveal = candidates.length > 0;  // grid is built from candidates; wait until they load
   if (!candidates.length && !running) return <Empty />;
-  if (running && !reveal) return <div className="font-body pulse" style={{ color: C.red }}>Applying mutations…</div>;
+  if (!reveal) return <div className="font-body pulse" style={{ color: C.red }}>Applying mutations…</div>;
   return (
     <div className="grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
       {muts.map((m, i) => {
@@ -395,9 +397,10 @@ function StageEmbedding({ candidates, running }) {
               <div className="flex" style={{ gap: 3, alignItems: "flex-end", height: 60 }}>
                 {SCALE_DEFS.map((s, j) => {
                   const rng = SCALE_RANGE[j];
-                  const norm = (s.map[ch] - rng.min) / (rng.max - rng.min || 1);
-                  const col = [C.red, C.gray, C.blue, C.green, C.yellow][j];
-                  return <div key={j} title={`${s.name}: ${s.map[ch]}`} style={{ width: 6, height: `${Math.max(4, norm * 100)}%`, background: col }} />;
+                  const val = s.map[ch] ?? 0;
+                  const norm = (val - rng.min) / (rng.max - rng.min || 1);
+                  const h = Math.max(4, (isFinite(norm) ? norm : 0) * 100);
+                  return <div key={j} title={`${s.name}: ${val}`} style={{ width: 6, height: `${h}%`, background: SCALE_COLORS[j] }} />;
                 })}
               </div>
               <div className="font-mono" style={{ fontSize: 22, marginTop: 8 }}>{ch}</div>
@@ -409,7 +412,7 @@ function StageEmbedding({ candidates, running }) {
       <div className="flex" style={{ gap: 10, fontSize: 11, color: C.gray, flexWrap: "wrap" }}>
         {SCALE_DEFS.map((s, j) => (
           <span key={j} className="font-body" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 9, height: 9, background: [C.red, C.gray, C.blue, C.green, C.yellow][j], display: "inline-block" }} />{s.name}
+            <span style={{ width: 9, height: 9, background: SCALE_COLORS[j], display: "inline-block" }} />{s.name}
           </span>
         ))}
       </div>
@@ -450,18 +453,21 @@ function StageVectorDB({ candidates, references, running }) {
   const pts = [...references.map((r) => ({ ...r, kind: "ref" })),
                ...candidates.map((r) => ({ peptide: r.peptide, pca_x: r.pca_x, pca_y: r.pca_y, composite: r.composite, kind: "cand" }))]
                .filter((p) => p.pca_x != null && p.pca_y != null);
+  const hasCoords = pts.length > 0;
   const xs = pts.map((p) => p.pca_x), ys = pts.map((p) => p.pca_y);
   const xmin = Math.min(...xs), xmax = Math.max(...xs), ymin = Math.min(...ys), ymax = Math.max(...ys);
   const W = 360, H = 320, pad = 22;
-  const sx = (x) => pad + ((x - xmin) / (xmax - xmin || 1)) * (W - 2 * pad);
-  const sy = (y) => H - pad - ((y - ymin) / (ymax - ymin || 1)) * (H - 2 * pad);
+  const spanX = (isFinite(xmax - xmin) && xmax - xmin) || 1;
+  const spanY = (isFinite(ymax - ymin) && ymax - ymin) || 1;
+  const sx = (x) => pad + ((x - xmin) / spanX) * (W - 2 * pad);
+  const sy = (y) => H - pad - ((y - ymin) / spanY) * (H - 2 * pad);
   const topPt = candidates[0];
 
   return (
     <div className="flex" style={{ gap: 40, flexWrap: "wrap" }}>
       {/* left: alignment */}
       <div style={{ flex: "1 1 360px" }}>
-        <div className="font-mono" style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>top candidate (HER2 {top.mutation})</div>
+        <div className="font-mono" style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>top candidate ({top.protein} {top.mutation})</div>
         <Aligned a={q} b={near} top />
         <div className="font-mono" style={{ fontSize: 12, color: C.gray, margin: "16px 0 6px" }}>
           nearest known epitope · {top.nearest_antigen}
@@ -481,7 +487,8 @@ function StageVectorDB({ candidates, references, running }) {
       {/* right: scatter */}
       <div style={{ flex: "1 1 360px" }}>
         <div className="font-mono" style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>embedding space (PCA) — blue = known epitopes, yellow = candidates</div>
-        <svg width={W} height={H} style={{ border: `1px solid ${C.rule}` }}>
+        {!hasCoords && <div className="font-body" style={{ fontSize: 13, color: C.gray, padding: 20 }}>Embedding map unavailable (no coordinates).</div>}
+        {hasCoords && <svg width={W} height={H} style={{ border: `1px solid ${C.rule}` }}>
           {refPt && topPt && (
             <line x1={sx(topPt.pca_x)} y1={sy(topPt.pca_y)} x2={sx(refPt.pca_x)} y2={sy(refPt.pca_y)}
                   stroke={C.blue} strokeWidth="1" strokeDasharray="3 3" />
@@ -497,10 +504,10 @@ function StageVectorDB({ candidates, references, running }) {
               <title>{p.peptide} · {p.antigen}</title>
             </circle>
           ))}
-          {topPt && (
+          {topPt && topPt.pca_x != null && (
             <circle cx={sx(topPt.pca_x)} cy={sy(topPt.pca_y)} r="9" fill="none" stroke={C.green} strokeWidth="2" className="pulse" />
           )}
-        </svg>
+        </svg>}
       </div>
     </div>
   );
@@ -650,6 +657,8 @@ function App() {
   const [revealed, setRevealed] = useState(new Set());
   const [log, setLog] = useState([]);
   const [selected, setSelected] = useState(null);
+  const activeRef = useRef(0);
+  const runFailedRef = useRef(false);
 
   const allComplete = () => { const s = {}; STAGES.forEach((x) => (s[x.key] = "complete")); return s; };
 
@@ -662,35 +671,47 @@ function App() {
     ]);
     setCandidates(c); setReferences(r); setConstruct(t);
     setLastRun(st.last_run);
-    if (c.length) setStageStatus(allComplete());
+    return st;
   }
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { (async () => { const st = await loadData(); if (st.has_results) setStageStatus(allComplete()); })(); }, []);
 
   function handleLine(line) {
     if (line.startsWith("STAGE:")) {
-      const [, key, ev, a] = line.split(":");
+      const parts = line.slice(6).split(":");   // strip "STAGE:"
+      const key = parts[0], ev = parts[1];
+      if (key === "done") {                       // terminal sentinel: STAGE:done:<rc>
+        if (+ev !== 0) {
+          runFailedRef.current = true;
+          setStageStatus((s) => { const k = Object.keys(s).find((x) => s[x] === "running"); return k ? { ...s, [k]: "error" } : s; });
+        }
+        return;
+      }
+      const skey = key === "construct" ? "scoring" : key;  // construct event drives Stage 6
       if (ev === "start") {
-        setStageStatus((s) => ({ ...s, [key]: "running" }));
-        const idx = STAGES.findIndex((x) => x.key === key);
-        if (idx >= 0) setActive(idx);
+        setStageStatus((s) => ({ ...s, [skey]: "running" }));
+        const idx = STAGES.findIndex((x) => x.key === skey);
+        if (idx >= 0) { setActive(idx); activeRef.current = idx; }
       } else if (ev === "complete") {
-        setStageStatus((s) => ({ ...s, [key]: "complete" }));
-        if (key === "candidates") setLive((l) => ({ done: +a, total: +a }));
+        setStageStatus((s) => ({ ...s, [skey]: "complete" }));
+        if (key === "candidates") setLive({ done: +parts[2], total: +parts[2] });
       } else if (ev === "progress") {
-        if (key === "candidates") setLive({ done: +line.split(":")[3], total: +line.split(":")[4] });
+        if (key === "candidates") setLive({ done: +parts[2], total: +parts[3] });
       }
     } else {
       setLog((l) => [...l, line].slice(-300));
-      const m = line.match(/^loaded ([A-Z0-9]+)/);
+      const m = line.match(/^loaded ([A-Z0-9]+) \(\d+ aa\)/);  // protein-load lines only
       if (m) setRevealed((s) => new Set(s).add(m[1]));
     }
   }
 
   async function onRun() {
     setRunning(true);
+    runFailedRef.current = false;
     setLog([]); setLive(null); setRevealed(new Set());
+    setCandidates([]); setReferences([]); setConstruct("");   // clear stale data so stages show live state
     setStageStatus(Object.fromEntries(STAGES.map((x) => [x.key, "idle"])));
-    setActive(0);
+    setActive(0); activeRef.current = 0;
+    let ok = true;
     try {
       const resp = await fetch("/pipeline/run", { method: "POST" });
       if (!resp.body) throw new Error("no stream");
@@ -709,11 +730,12 @@ function App() {
         }
       }
     } catch (e) {
+      ok = false;
       setLog((l) => [...l, "stream error: " + e.message + " (is the server running?)"]);
-      setStageStatus((s) => ({ ...s, [STAGES[active].key]: "error" }));
+      setStageStatus((s) => ({ ...s, [STAGES[activeRef.current].key]: "error" }));
     }
     await loadData();
-    setStageStatus(allComplete());
+    if (ok && !runFailedRef.current) setStageStatus(allComplete());  // only on a clean run
     setRunning(false);
   }
 
@@ -741,7 +763,7 @@ function App() {
 
   return (
     <div className="flex" style={{ height: "100vh", minWidth: 1080 }}>
-      <Sidebar stageStatus={stageStatus} active={active} onPick={setActive} counts={counts} />
+      <Sidebar stageStatus={stageStatus} active={active} onPick={setActive} counts={counts} running={running} />
       <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0 }}>
           <StageShell stage={stage}>{view()}</StageShell>

@@ -29,6 +29,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
@@ -74,6 +75,10 @@ def appjsx():
     return FileResponse(ROOT / "app.jsx", media_type="text/babel")
 
 
+# vendored React/Babel, served same-origin so the app runs offline
+app.mount("/vendor", StaticFiles(directory=str(ROOT / "vendor")), name="vendor")
+
+
 # ---- data --------------------------------------------------------------------
 @app.get("/data/candidates")
 def candidates():
@@ -94,7 +99,12 @@ def construct():
 
 @app.get("/data/status")
 def status():
-    if CANDIDATES_CSV.exists():
+    # require a *complete* result set (a killed run can leave just the CSV)
+    complete = (
+        CANDIDATES_CSV.exists() and CANDIDATES_CSV.stat().st_size > 0
+        and CONSTRUCT_TXT.exists() and CONSTRUCT_TXT.stat().st_size > 0
+    )
+    if complete:
         ts = datetime.fromtimestamp(CANDIDATES_CSV.stat().st_mtime, tz=timezone.utc)
         return {"has_results": True, "last_run": ts.isoformat()}
     return {"has_results": False, "last_run": None}
@@ -120,7 +130,14 @@ async def run_pipeline():
                 line = raw.decode(errors="replace").rstrip("\n")
                 yield f"data: {line}\n\n"
         finally:
-            await proc.wait()
+            # if the client disconnected mid-run, don't leave a zombie pipeline
+            if proc.returncode is None:
+                proc.terminate()
+                try:
+                    await asyncio.wait_for(proc.wait(), timeout=5)
+                except asyncio.TimeoutError:
+                    proc.kill()
+                    await proc.wait()
         yield f"data: STAGE:done:{proc.returncode}\n\n"
 
     return StreamingResponse(

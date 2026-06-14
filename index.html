@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>In-Silico Cancer Vaccine Designer</title>
 
-  <!-- Tailwind: layout utilities only -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- React + Babel (in-browser transpile of app.jsx) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- React + Babel served locally from /vendor so the app runs fully offline -->
+  <script src="/vendor/react.production.min.js"></script>
+  <script src="/vendor/react-dom.production.min.js"></script>
+  <script src="/vendor/babel.min.js"></script>
 
   <style>
+    /* Google Fonts; if blocked, the font stacks below fall back gracefully */
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 
     :root {
@@ -26,6 +24,14 @@
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .font-mono    { font-family: 'DM Mono', 'SFMono-Regular', Menlo, monospace; }
     .font-body    { font-family: 'Inter', system-ui, sans-serif; }
+
+    /* layout utilities (replaces the Tailwind CDN — only the 6 used by app.jsx) */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .items-baseline { align-items: baseline; }
+    .grid { display: grid; }
+    .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 
     .rule { border: none; border-top: 1px solid var(--rule); margin: 0; }
     .seq  { white-space: nowrap; overflow-x: auto; }
