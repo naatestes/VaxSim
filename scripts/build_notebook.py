@@ -237,6 +237,48 @@ print(vaccine["construct"])
 """)
 
 md(r"""
+## Validation — does the scoring capture real immunology?
+
+There is no clinical ground truth for these candidates, so instead we test the *method's*
+behaviour: if the binding heuristic is meaningful, the 32 **known immunogenic** reference
+epitopes should score far higher than random peptides drawn from the same proteins. They do —
+a clean separation, which is face-validity evidence that the scorer reflects the real
+HLA-A\*02:01 motif rather than noise. (This validates the method, not any individual candidate.)
+""")
+
+code(r"""
+from vaxsim import binding_score
+from vaxsim.features import PEPTIDE_LENGTH
+
+rng = np.random.default_rng(0)
+seqs = list(proteins.values())
+rand_peptides = []
+while len(rand_peptides) < 2000:
+    s = seqs[rng.integers(len(seqs))]
+    i = int(rng.integers(0, len(s) - PEPTIDE_LENGTH))
+    p = s[i:i + PEPTIDE_LENGTH]
+    if all(c in "ACDEFGHIKLMNPQRSTVWY" for c in p):
+        rand_peptides.append(p)
+
+ref_binding = np.array([binding_score(p) for p, _, _ in REFERENCE_EPITOPES])
+rand_binding = np.array([binding_score(p) for p in rand_peptides])
+print(f"known immunogenic epitopes: mean {ref_binding.mean():.3f}  ({(ref_binding>=0.71).mean()*100:.0f}% >= 0.71)")
+print(f"random proteome 9-mers    : mean {rand_binding.mean():.3f}  ({(rand_binding>=0.71).mean()*100:.0f}% >= 0.71)")
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+ax.hist(rand_binding, bins=20, density=True, alpha=0.6, color="#999999",
+        label=f"random proteome 9-mers (n={len(rand_binding)})")
+ax.hist(ref_binding, bins=12, density=True, alpha=0.75, color="#2471A3",
+        label=f"known immunogenic epitopes (n={len(ref_binding)})")
+ax.axvline(0.71, color="#C0392B", linestyle="--", linewidth=1, label="strong-binder threshold")
+ax.set_xlabel("HLA-A*02:01 binding score (heuristic)")
+ax.set_ylabel("density")
+ax.set_title("Validation: scoring separates known immunogenic epitopes from random peptides")
+ax.legend(fontsize=8)
+plt.tight_layout(); plt.savefig(f"{FIG}/fig_d_validation.png"); plt.show()
+""")
+
+md(r"""
 ## Conclusions
 
 *(Write this section in your own words for the report.)* Talking points grounded in the run above:

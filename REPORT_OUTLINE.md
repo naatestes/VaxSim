@@ -46,6 +46,10 @@ Pipeline with a Vector Database."* Then both team member names, alphabetical by 
   targets are upper-right.
 - **Figure (c)** `figures/fig_c_embedding_pca.png` — PCA; high-scoring candidates fall
   among known immunogenic epitopes (the central thesis, visually).
+- **Figure (d)** `figures/fig_d_validation.png` — **validation**: the binding heuristic scores
+  the 32 known immunogenic epitopes far higher than random proteome 9-mers (mean 0.92 vs 0.38;
+  100% vs 10% above the strong-binder threshold). Face-validity that the method captures real
+  HLA-A\*02:01 immunology — *not* clinical validation of any single candidate. Strongest "it works" result.
 - Table: top candidates (from `data/candidate_neoantigens.csv`). Discuss specific hits,
   e.g. **HER2 S310F → GFCTLVCPL**, nearest known = **GLCTLVAML (EBV BMLF1)**, composite 0.77;
   **KRAS G12V → LVVVGAVGV**. Note EGFR/HER2 tie back to the Yale vaccine targets.
@@ -65,6 +69,8 @@ Pipeline with a Vector Database."* Then both team member names, alphabetical by 
 - Vector DB: **32** known immunogenic epitopes (8 viral, 24 tumor).
 - Top candidate: **HER2 S310F / GFCTLVCPL**, composite **0.7652**.
 - Final vaccine: **8 epitopes**, **93 aa** string-of-beads construct.
+- Validation: known immunogenic epitopes mean binding **0.92** (100% ≥ 0.71) vs random 9-mers **0.38** (10% ≥ 0.71).
+- Runtime: **~0.1 s** to score all candidates on CPU (no GPU); fully reproducible.
 
 ## Submission checklist (Gradescope, due Mon Jun 15 11:59 PM)
 - [ ] 5+ page report (PDF) — your prose.
