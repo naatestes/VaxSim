@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>In-Silico Cancer Vaccine Designer</title>
+
+  <!-- Tailwind: layout utilities only -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React + Babel (in-browser transpile of app.jsx) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --red: #C0392B; --yellow: #D4AC0D; --blue: #2471A3; --green: #1E8449;
+      --ink: #111111; --gray: #555555; --rule: #E6E6E6;
+    }
+    html, body, #root { height: 100%; }
+    body { margin: 0; background: #FFFFFF; color: var(--ink); }
+
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .font-mono    { font-family: 'DM Mono', 'SFMono-Regular', Menlo, monospace; }
+    .font-body    { font-family: 'Inter', system-ui, sans-serif; }
+
+    .rule { border: none; border-top: 1px solid var(--rule); margin: 0; }
+    .seq  { white-space: nowrap; overflow-x: auto; }
+    .seq::-webkit-scrollbar { height: 6px; }
+    .seq::-webkit-scrollbar-thumb { background: #ccc; }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+    .pulse { animation: pulse 1s ease-in-out infinite; }
+    @keyframes grow { from { width: 0; } }
+    .grow { animation: grow 0.9s ease-out; }
+
+    button { font-family: 'Inter', system-ui, sans-serif; cursor: pointer; }
+    table { border-collapse: collapse; }
+  </style>
+</head>
+<body class="font-body">
+  <div id="root"></div>
+  <script type="text/babel" src="/app.jsx" data-presets="react"></script>
+  <noscript>This explainer requires JavaScript.</noscript>
+</body>
+</html>

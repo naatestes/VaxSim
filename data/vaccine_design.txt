@@ -1,0 +1,16 @@
+DESIGNED CANCER VACCINE (string-of-beads construct)
+=======================================================
+
+protein mutation   peptide  binding  similarity nearest_antigen  composite
+   HER2    S310F GFCTLVCPL   0.7143      0.8161       EBV BMLF1     0.7652
+   EGFR    T790M STVQLIMQL   0.8571      0.6596        CMV pp65     0.7584
+   KRAS     G12V LVVVGAVGV   0.8571      0.6242  Melan-A/MART-1     0.7407
+   EGFR    G719S VLSSGAFGT   0.8571      0.6234           gp100     0.7403
+   KRAS     G12C LVVVGACGV   0.8571      0.5950  Melan-A/MART-1     0.7261
+   HER2    V777L MAGLGSPYV   0.8571      0.5142  Melan-A/MART-1     0.6857
+   TP53    G245S SMNRRPILT   0.8000      0.5457        HER2/neu     0.6728
+   EGFR    L858R ITDFGRAKL   0.7714      0.5729             WT1     0.6722
+
+Linker: AAY
+Construct (93 aa):
+GFCTLVCPLAAYSTVQLIMQLAAYLVVVGAVGVAAYVLSSGAFGTAAYLVVVGACGVAAYMAGLGSPYVAAYSMNRRPILTAAYITDFGRAKL
