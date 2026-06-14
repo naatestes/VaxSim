@@ -77,6 +77,13 @@ def appjsx():
 
 # vendored React/Babel, served same-origin so the app runs offline
 app.mount("/vendor", StaticFiles(directory=str(ROOT / "vendor")), name="vendor")
+# figures, so the slide deck can embed them when served
+app.mount("/figures", StaticFiles(directory=str(ROOT / "figures")), name="figures")
+
+
+@app.get("/slides")
+def slides():
+    return FileResponse(ROOT / "slides.html")
 
 
 # ---- data --------------------------------------------------------------------

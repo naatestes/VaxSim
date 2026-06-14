@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>VaxSim — 5-slide deck</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+:root{ --red:#C0392B; --yellow:#D4AC0D; --blue:#2471A3; --green:#1E8449; --ink:#111; --gray:#555; --rule:#E2E2E2; }
+*{ box-sizing:border-box; }
+body{ margin:0; background:#cfcfcf; font-family:'Inter',system-ui,sans-serif; color:var(--ink); }
+.display{ font-family:'Cormorant Garamond',Georgia,serif; }
+.mono{ font-family:'DM Mono',Menlo,monospace; }
+
+/* 16:9 slides */
+.slide{
+  position:relative; width:1280px; height:720px; margin:24px auto; background:#fff;
+  padding:64px 72px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.18);
+}
+.kicker{ font-family:'DM Mono',monospace; font-size:14px; letter-spacing:3px; text-transform:uppercase; color:var(--gray); }
+.title{ font-size:64px; line-height:1.04; margin:10px 0 0; }
+.h2{ font-size:46px; line-height:1.05; margin:6px 0 18px; }
+hr{ border:none; border-top:1px solid var(--rule); margin:18px 0; }
+.lead{ font-size:21px; line-height:1.5; color:#222; max-width:1000px; }
+.small{ font-size:16px; color:var(--gray); }
+ul{ margin:10px 0; padding-left:0; list-style:none; }
+li{ font-size:19px; line-height:1.5; margin:12px 0; padding-left:26px; position:relative; }
+li::before{ content:""; position:absolute; left:0; top:11px; width:9px; height:9px; background:var(--accent,#999); }
+.foot{ position:absolute; left:72px; bottom:40px; font-size:13px; color:#888; }
+.pageno{ position:absolute; right:72px; bottom:40px; font-size:13px; color:#aaa; font-family:'DM Mono',monospace; }
+
+/* pipeline flow */
+.flow{ display:flex; gap:0; align-items:stretch; margin:26px 0 8px; }
+.step{ flex:1; border:1px solid var(--rule); border-top:4px solid var(--c); padding:16px 12px; text-align:center; }
+.step .n{ font-family:'DM Mono',monospace; font-size:12px; color:var(--c); }
+.step .s{ font-size:16px; margin-top:6px; }
+.arrow{ display:flex; align-items:center; color:#bbb; font-size:22px; padding:0 6px; }
+
+.cols{ display:flex; gap:40px; }
+.seq{ font-family:'DM Mono',monospace; font-size:26px; letter-spacing:2px; white-space:nowrap; }
+.bead{ background:#F4FBF6; border:1px solid #D7EADD; color:var(--green); padding:6px 9px; }
+.aay{ color:#bbb; font-size:13px; padding:0 5px; }
+.stat{ font-family:'Cormorant Garamond',serif; font-size:54px; line-height:1; }
+.statlbl{ font-size:14px; color:var(--gray); }
+img.fig{ border:1px solid var(--rule); }
+
+@media print{
+  body{ background:#fff; }
+  .slide{ margin:0; box-shadow:none; page-break-after:always; break-after:page; }
+  .slide:last-child{ page-break-after:auto; }
+  @page{ size:1280px 720px; margin:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SLIDE 1 — TITLE ============ -->
+<section class="slide">
+  <div class="kicker">DS4300 · NoSQL R&amp;D Project · Data Science Application</div>
+  <div class="title display">In-Silico Cancer<br>Vaccine Designer</div>
+  <hr>
+  <div class="lead">Simulating the personalized neoantigen vaccine pipeline — with a
+  <strong style="color:var(--blue)">vector database</strong> at its core.</div>
+  <div style="margin-top:40px" class="mono small">
+    Nathaniel Estes &nbsp;·&nbsp; [Groupmate Name]<br>
+    <span style="color:#aaa">(authors in alphabetical order by last name — fill in)</span>
+  </div>
+  <div class="foot">Motivation: the Yale canine cancer vaccine (Dr. Mark Mamula) — targets EGFR &amp; HER2.</div>
+  <div class="pageno">01 / 05</div>
+</section>
+
+<!-- ============ SLIDE 2 — THE PROBLEM ============ -->
+<section class="slide">
+  <div class="kicker" style="color:var(--red)">Motivation</div>
+  <div class="h2 display">How is a cancer vaccine actually designed?</div>
+  <hr>
+  <ul>
+    <li style="--accent:var(--red)">At Yale, Dr. Mark Mamula's lab built a cancer vaccine for <strong>dogs</strong> targeting
+      <strong>EGFR/HER2</strong> — a search-and-rescue dog, Hunter, now shows no evidence of cancer.</li>
+    <li style="--accent:var(--red)">Human <strong>personalized neoantigen / mRNA vaccines</strong> follow the same idea: teach the immune
+      system to see proteins that are abnormal <em>only</em> in tumor cells.</li>
+    <li style="--accent:var(--blue)">But <strong>how</strong> is the target chosen? We simulate the computational pipeline that turns a
+      tumor's mutations into a ranked vaccine — and use a <strong>NoSQL vector database</strong> as the ranking engine.</li>
+    <li style="--accent:var(--green)">Significance: cancer immunotherapy; originality: ranking neoantigens <em>is</em> a similarity search,
+      something a relational database cannot express.</li>
+  </ul>
+  <div class="foot">A simplified, educational simulation — not a clinical tool.</div>
+  <div class="pageno">02 / 05</div>
+</section>
+
+<!-- ============ SLIDE 3 — METHODS / PIPELINE ============ -->
+<section class="slide">
+  <div class="kicker" style="color:var(--blue)">Methods</div>
+  <div class="h2 display">An ETL pipeline with a vector database at its core</div>
+  <div class="flow">
+    <div class="step" style="--c:#555"><div class="n">01</div><div class="s">Proteins</div></div>
+    <div class="arrow">→</div>
+    <div class="step" style="--c:var(--red)"><div class="n">02</div><div class="s">Mutations</div></div>
+    <div class="arrow">→</div>
+    <div class="step" style="--c:var(--yellow)"><div class="n">03</div><div class="s">Candidates</div></div>
+    <div class="arrow">→</div>
+    <div class="step" style="--c:var(--blue)"><div class="n">04</div><div class="s">Embedding</div></div>
+    <div class="arrow">→</div>
+    <div class="step" style="--c:var(--blue)"><div class="n">05</div><div class="s">Vector DB</div></div>
+    <div class="arrow">→</div>
+    <div class="step" style="--c:var(--green)"><div class="n">06</div><div class="s">Score &amp; Build</div></div>
+  </div>
+  <ul>
+    <li style="--accent:#555"><strong>Real inputs:</strong> 4 proteins from UniProt · 16 documented hotspot mutations ·
+      32 published HLA-A*02:01 immunogenic epitopes.</li>
+    <li style="--accent:var(--yellow)"><strong>Extract→Transform:</strong> mutate → slice mutation-spanning 9-mers → embed each as a
+      47-d physicochemical vector.</li>
+    <li style="--accent:var(--blue)"><strong>Load/Query (ChromaDB):</strong> rank each candidate by cosine similarity to known immunogenic
+      epitopes — a nearest-neighbor query.</li>
+    <li style="--accent:var(--green)"><strong>Honest scope:</strong> binding is a transparent HLA-A*02:01 heuristic, not NetMHCpan.</li>
+  </ul>
+  <div class="pageno">03 / 05</div>
+</section>
+
+<!-- ============ SLIDE 4 — RESULTS / VALIDATION ============ -->
+<section class="slide">
+  <div class="kicker" style="color:var(--green)">Results &amp; Validation</div>
+  <div class="h2 display">144 candidates → a validated scoring method</div>
+  <div class="cols">
+    <div style="flex:0 0 560px">
+      <img class="fig" src="figures/fig_d_validation.png" width="560" alt="validation histogram" />
+      <div class="small" style="margin-top:8px">Binding heuristic separates 32 known immunogenic
+      epitopes from 2,000 random proteome 9-mers.</div>
+    </div>
+    <div style="flex:1">
+      <div style="display:flex; gap:34px; margin-bottom:18px">
+        <div><div class="stat" style="color:var(--yellow)">144</div><div class="statlbl">candidates (16 mutations)</div></div>
+        <div><div class="stat" style="color:var(--blue)">32</div><div class="statlbl">reference epitopes</div></div>
+      </div>
+      <ul>
+        <li style="--accent:var(--green)"><strong>Validation:</strong> known epitopes mean binding <strong>0.92</strong>
+          (100% ≥ threshold) vs random <strong>0.38</strong> (10%).</li>
+        <li style="--accent:var(--blue)"><strong>Top hit:</strong> HER2 S310F <span class="mono">GFCTLVCPL</span> →
+          nearest known <span class="mono">GLCTLVAML</span> (EBV), composite 0.77.</li>
+        <li style="--accent:#555"><strong>Runtime ~0.1 s</strong> on CPU, no GPU; fully reproducible.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">Face-validity of the method — not clinical validation of any single candidate.</div>
+  <div class="pageno">04 / 05</div>
+</section>
+
+<!-- ============ SLIDE 5 — CONSTRUCT + CONCLUSIONS ============ -->
+<section class="slide">
+  <div class="kicker" style="color:var(--green)">The designed vaccine &amp; conclusions</div>
+  <div class="h2 display">An 8-epitope, 93-aa string-of-beads construct</div>
+  <div class="seq" style="margin:6px 0 22px">
+    <span class="bead">GFCTLVCPL</span><span class="aay">AAY</span><span class="bead">STVQLIMQL</span><span class="aay">AAY</span><span class="bead">LVVVGAVGV</span><span class="aay">AAY</span><span class="bead">VLSSGAFGT</span><span class="aay">AAY</span><span class="bead">…</span>
+  </div>
+  <hr>
+  <div class="cols">
+    <div style="flex:1">
+      <div class="kicker" style="font-size:12px">Takeaways</div>
+      <ul>
+        <li style="--accent:var(--green)">A vector DB is a natural fit — ranking neoantigens is a similarity search.</li>
+        <li style="--accent:var(--blue)">EGFR &amp; HER2 epitopes echo the Yale canine vaccine's targets.</li>
+        <li style="--accent:#555">Transparent, fast, reproducible — no GPU, no black box.</li>
+      </ul>
+    </div>
+    <div style="flex:1">
+      <div class="kicker" style="font-size:12px; color:var(--red)">Limitations (honest)</div>
+      <ul>
+        <li style="--accent:var(--red)">Heuristic binding, not NetMHCpan; one HLA allele (A*02:01).</li>
+        <li style="--accent:var(--red)">Physicochemical (not learned) embeddings.</li>
+        <li style="--accent:var(--red)">No expression filter or lab validation.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">Future work: plug in a learned predictor (mhcflurry/NetMHCpan) · more alleles · ESM embeddings.</div>
+  <div class="pageno">05 / 05</div>
+</section>
+
+</body>
+</html>
