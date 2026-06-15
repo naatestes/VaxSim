@@ -178,11 +178,40 @@ http://localhost:8000. See `README_APP.md`.
   `data/reference_points.csv`. Mutation set expanded to 16 real point mutations (144 candidates).
 - Verified in a real browser: all 6 stages render, no console errors, live run streams + reloads.
 
-**STILL OPEN:**
-1. **Groupmate's full name** — needed for alphabetical-by-last-name ordering on the report.
-2. **Write the 5+ page report prose** (YOURSELVES — see `REPORT_OUTLINE.md`).
-3. **5-slide PDF deck** (outline in `REPORT_OUTLINE.md`).
-4. **Who submits** to Gradescope + adds both members; AI-usage + contribution declarations.
+**LATER ADDITIONS (all committed + pushed):**
+- 5-slide deck `slides.html` (print → PDF; embeds the validation figure); served at `/slides`.
+- Validation figure `figures/fig_d_validation.png` (binding heuristic: known epitopes 0.92 vs random 0.38;
+  100% vs 10% above threshold) — face-validity, not clinical validation.
+- App hardened via adversarial review + made offline-capable (React/Babel vendored in `vendor/`, Tailwind
+  replaced by inline CSS); failed runs no longer show as success.
+- **Differential agretopicity** columns (`wt_binding`, `dai`) added to the candidate CSV — non-disruptive
+  (ranking/figures unchanged). 46/144 candidates have DAI>0; rest novel at TCR-facing positions.
+- Report writing scaffold: `REPORT_METHODS_ANALYSIS_GUIDE.md` (structure + numbers + citations, NOT prose).
 
-> Reminder given the ~1-day timeline: prose must be human-written; budget time for the
-> tutorial/demo, the 5 slides, and the AI-usage + contribution declarations.
+**HONEST SCOPE (state in report):** faithful pipeline *structure*, simplified *methods* (anchor heuristic not
+NetMHCpan; one HLA allele A*02:01; 9-mers only; similarity-to-known as immunogenicity proxy), *omitted*
+inputs (real sequencing/variant-calling, RNA expression, clonality, self-tolerance filter) and all wet-lab/
+clinical validation. Outputs are illustrative of the method, not validated targets. Researched upgrade not taken:
+mhcflurry (verified pip-installable on Py3.13, ~135MB model) would make binding "real" — left as future work.
+
+## 8. REPOS
+- Khoury (primary, groupmate collaborates): `git@github.khoury.northeastern.edu:estesn/VaxSim.git` (remote `origin`)
+  — STILL TODO: add groupmate as collaborator at .../estesn/VaxSim/settings/access (Write).
+- Personal github.com: `git@github.com:naatestes/VaxSim.git` (remote `github`). Push to both: `git push` then `git push github main`.
+
+## 9. SUBMISSION PLAN — due MON 2026-06-15 @ 11:59 PM (no late extensions). 4-hour plan; finish by ~10 PM.
+- **Declaration sheet:** Group # (next open) · Nathaniel Estes + [groupmate] · "Application" · "ChromaDB (vector
+  database)" · "Vector database (embedding store)" · Title: "In-Silico Cancer Vaccine Designer: Neoantigen
+  Selection with a NoSQL Vector Database". (ChromaDB IS allowed — application track; prof named vector DBs.)
+- **Hr 1–2 — REPORT (own prose, NOT AI):** split sections (A: Abstract/Intro/Methods; B: Analysis/Conclusions),
+  merge, 5+ pages single-spaced, include all caveats + the 4 figures. Use `REPORT_METHODS_ANALYSIS_GUIDE.md`.
+  Export PDF. Key numbers: 144 candidates, 16 mutations, 32 refs, top HER2 S310F/GFCTLVCPL 0.765, 93-aa
+  construct, validation 0.92 vs 0.38, 46/144 DAI>0.
+- **Hr 3 — slides + prep:** open `slides.html` → fill names → Print→PDF (5 landscape pages). Write AI-use
+  declaration (AI = code/app/scaffold/research; prose by us) + per-member contribution doc. Zip code (exclude
+  `.venv/`) + `data/`.
+- **Hr 4 — verify + submit + rehearse:** proofread aloud; Gradescope = report PDF + 5-slide PDF + code zip +
+  data zip; **add both members**; verify every file opens. Then rehearse the live app demo (`uvicorn server:app
+  --port 8000`, click 6 stages + Run once), 60s talking points each for Tue/Wed (Jun 16–17) conference.
+- **Definition of done:** report PDF (your prose, caveats) · 5-slide PDF w/ both names · code+data zips ·
+  AI-use + contribution declarations · both members on Gradescope · all files verified · groupmate added on Khoury.
