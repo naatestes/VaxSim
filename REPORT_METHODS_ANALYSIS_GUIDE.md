@@ -58,6 +58,10 @@ Required section order (Research/Application track): Title → Names (alphabetic
   simplified motif rule, **not NetMHCpan**.
 - **Similarity**: cosine to nearest known immunogenic epitope (from M5).
 - **Composite** = 0.5·binding + 0.5·similarity.
+- **Differential agretopicity (DAI)** = mutant binding − wild-type binding, reported per candidate
+  (column `dai` in the CSV). Rationale: a mutation that *creates/strengthens* presentation the normal
+  protein lacks escapes central tolerance → a better target. [cite the differential-agretopicity / neoantigen
+  prioritization literature]. NOTE this is reported as an extra signal, not folded into the ranking.
 - Selection: top epitope per mutation → 8 epitopes joined by **AAY** proteasomal-cleavage linkers into a
   **string-of-beads** construct. [cite multi-epitope/string-of-beads vaccine design]
 
@@ -74,6 +78,16 @@ Required section order (Research/Application track): Title → Names (alphabetic
   similarity mean **0.42**, composite mean **0.46**; **15%** are strong binders (≥0.71).
 - **Figure (a)** `figures/fig_a_top_per_mutation.png` — best score per mutation; which mutations yield
   the strongest targets. Comment on EGFR/HER2 prominence.
+
+### A1b. Two classes of neoantigen (differential agretopicity)
+- Report: **46 of 144** candidates have **DAI > 0** (the mutation strengthens HLA binding relative to the
+  wild-type peptide); the rest have DAI ≈ 0 but are still **novel** (differ from self).
+- Interpret the two classes honestly: DAI > 0 = the mutation sits at an **anchor** position and *creates*
+  presentation (escapes tolerance); DAI ≈ 0 with a TCR-facing mutation = binding is **preserved** but the
+  peptide is still foreign to T-cells. Both are legitimate neoantigen types.
+- **Honest caveat to state:** because the binding score is a coarse anchor heuristic, DAI is exactly 0
+  whenever the mutated residue is not an anchor — a finer predictor (e.g. NetMHCpan/mhcflurry) would make
+  DAI more granular. So treat DAI here as illustrative of the *concept*, not a precise quantity.
 
 ### A2. What separates the best candidates
 - **Figure (b)** `figures/fig_b_binding_vs_similarity.png` — binding vs. similarity; the best targets sit

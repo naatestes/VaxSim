@@ -54,6 +54,7 @@ def score_candidates(
                 if not neo.is_novel:
                     continue  # mutation fell outside this window; skip self-peptide
                 b = binding_score(neo.peptide)
+                b_wt = binding_score(neo.wildtype_peptide)  # differential agretopicity
                 hit = store.nearest(neo.peptide, k=1)[0]
                 s = hit["similarity"]
                 composite = w_binding * b + w_similarity * s
@@ -66,6 +67,8 @@ def score_candidates(
                         "mut_pos_in_peptide": neo.mut_position_in_peptide,
                         "anchors": anchor_status(neo.peptide),
                         "binding": round(b, 4),
+                        "wt_binding": round(b_wt, 4),
+                        "dai": round(b - b_wt, 4),  # >0: mutation creates/strengthens binding vs self
                         "similarity": round(s, 4),
                         "nearest_known": hit["epitope"],
                         "nearest_antigen": hit["antigen"],
